@@ -1,0 +1,82 @@
+const bcrypt = require('bcryptjs');
+const prisma = require('../config/db');
+const generateToken = require('../utils/generateToken');
+const { isValidEmail, isValidPassword } = require('../utils/validators');
+
+const register = async ({ name, email, password, role, profile }) => {
+  if (!name || !email || !password || !role) {
+    throw { status: 400, message: 'name, email, password, and role are required' };
+  }
+  if (!isValidEmail(email)) {
+    throw { status: 400, message: 'Invalid email format' };
+  }
+  if (!isValidPassword(password)) {
+    throw { status: 400, message: 'Password must be at least 6 characters' };
+  }
+  if (!['PATIENT', 'DOCTOR'].includes(role)) {
+    throw { status: 400, message: 'Role must be PATIENT or DOCTOR' };
+  }
+
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) throw { status: 409, message: 'Email already in use' };
+
+  const hashed = await bcrypt.hash(password, 10);
+
+  const data = { name, email, password: hashed, role };
+
+  if (role === 'PATIENT') {
+    const { age, contactInfo, bloodGroup, address } = profile || {};
+    if (!age || !contactInfo || !bloodGroup || !address) {
+      throw { status: 400, message: 'Patient profile fields are required' };
+    }
+    data.patientProfile = { create: { age: parseInt(age), contactInfo, bloodGroup, address } };
+  }
+
+  if (role === 'DOCTOR') {
+    const { age, experience, speciality, clinicAddress, fees, timings } = profile || {};
+    if (!age || !experience || !speciality || !clinicAddress || !fees || !timings) {
+      throw { status: 400, message: 'Doctor profile fields are required' };
+    }
+    data.doctorProfile = {
+      create: {
+        age: parseInt(age),
+        experience: parseInt(experience),
+        speciality,
+        clinicAddress,
+        fees: parseFloat(fees),
+        timings,
+      },
+    };
+  }
+
+  const user = await prisma.user.create({ data });
+  const token = generateToken({ id: user.id, role: user.role });
+  return { token, user: { id: user.id, name: user.name, email: user.email, role: user.role } };
+};
+
+const login = async ({ email, password }) => {
+  if (!email || !password) {
+    throw { status: 400, message: 'Email and password are required' };
+  }
+
+  const user = await prisma.user.findUnique({ where: { email } });
+  if (!user) throw { status: 401, message: 'Invalid credentials' };
+
+  const valid = await bcrypt.compare(password, user.password);
+  if (!valid) throw { status: 401, message: 'Invalid credentials' };
+
+  const token = generateToken({ id: user.id, role: user.role });
+  return { token, user: { id: user.id, name: user.name, email: user.email, role: user.role } };
+};
+
+const getMe = async (userId) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: { patientProfile: true, doctorProfile: true },
+  });
+  if (!user) throw { status: 404, message: 'User not found' };
+  const { password, ...rest } = user;
+  return rest;
+};
+
+module.exports = { register, login, getMe };
