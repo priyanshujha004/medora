@@ -1,6 +1,6 @@
-# Medora — Healthcare Appointment Scheduling Platform
+# Medora — Healthcare Appointment Platform
 
-> A full-stack MVP for managing healthcare appointments between patients and doctors. Built with a modern monorepo architecture, production-grade REST API, and a clean React frontend.
+A full-stack MVP for managing healthcare appointments between patients and doctors. Built with a modern monorepo architecture, production-grade REST API, and a clean React frontend.
 
 **Live:** [https://healthcare-medora.vercel.app](https://healthcare-medora.vercel.app)
 
@@ -136,8 +136,3 @@ cd apps/frontend
 npm run dev
 # → http://localhost:5173
 ```
-
-## Author
-
-**Priyanshu Jha**
-© 2026 Priyanshu Jha. All rights reserved.
