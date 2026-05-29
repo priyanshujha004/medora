@@ -8,7 +8,14 @@ import { formatDate } from '../../utils/formatDate';
 const urgencyClass = { NORMAL: 'badge-normal', URGENT: 'badge-urgent', IMPORTANT: 'badge-important' };
 
 // Returns today's date in YYYY-MM-DD format matching slot.date
-const getTodayStr = () => new Date().toISOString().split('T')[0];
+// Use local date to avoid UTC offset mismatch (IST = UTC+5:30)
+const getTodayStr = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 const DoctorDashboard = () => {
   const { user } = useAuth();
@@ -41,7 +48,9 @@ const DoctorDashboard = () => {
   const todayAppointments = appointments.filter((a) => {
     if (a.status !== 'APPROVED') return false;
     if (!a.slot?.date) return false;
-    const slotDate = new Date(a.slot.date).toISOString().split('T')[0];
+    // Parse slot date in local timezone to match today's local date
+    const d = new Date(a.slot.date);
+    const slotDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     return slotDate === todayStr;
   });
 

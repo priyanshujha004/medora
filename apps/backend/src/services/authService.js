@@ -89,5 +89,18 @@ const getMe = async (userId) => {
 
   return rest;
 };
+const updatePatientProfile = async (userId, data) => {
+  const { age, contactInfo, bloodGroup, address } = data;
+  const updated = await prisma.patientProfile.update({
+    where: { patientId: userId },
+    data: {
+      ...(age && { age: parseInt(age) }),
+      ...(contactInfo && { contactInfo }),
+      ...(bloodGroup && { bloodGroup }),
+      ...(address && { address }),
+    },
+  });
+  return updated;
+};
 
-module.exports = { register, login, getMe };
+module.exports = { register, login, getMe, updatePatientProfile };

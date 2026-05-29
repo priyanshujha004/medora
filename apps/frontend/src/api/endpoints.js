@@ -3,6 +3,7 @@ export const ENDPOINTS = {
     REGISTER: '/auth/register',
     LOGIN: '/auth/login',
     ME: '/auth/me',
+    UPDATE_PATIENT_PROFILE: '/auth/patient/profile',
   },
   DOCTORS: {
     LIST: '/doctors',

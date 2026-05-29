@@ -27,4 +27,13 @@ const getMe = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, getMe };
+const updatePatientProfile = async (req, res, next) => {
+  try {
+    const updated = await authService.updatePatientProfile(req.user.id, req.body);
+    res.status(200).json({ message: 'Profile updated successfully', profile: updated });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { register, login, getMe, updatePatientProfile };
