@@ -1,3 +1,5 @@
+const makeReadableId = (prefix, uuid) =>
+  `${prefix}-${uuid.replace(/-/g, '').slice(0, 4).toUpperCase()}`;
 const bcrypt = require('bcryptjs');
 const prisma = require('../config/db');
 const generateToken = require('../utils/generateToken');
@@ -76,6 +78,15 @@ const getMe = async (userId) => {
   });
   if (!user) throw { status: 404, message: 'User not found' };
   const { password, ...rest } = user;
+
+  // Attach readable ID based on role
+  if (rest.role === 'PATIENT' && rest.patientProfile) {
+    rest.patientProfile.readableId = makeReadableId('PAT', rest.id);
+  }
+  if (rest.role === 'DOCTOR' && rest.doctorProfile) {
+    rest.doctorProfile.readableId = makeReadableId('DOC', rest.id);
+  }
+
   return rest;
 };
 

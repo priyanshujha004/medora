@@ -1,6 +1,11 @@
 import { formatDate, formatDateTime } from '../../utils/formatDate';
 
-const urgencyClass = { NORMAL: 'badge-normal', URGENT: 'badge-urgent', IMPORTANT: 'badge-important' };
+const urgencyClass = {
+  NORMAL: 'badge-normal',
+  URGENT: 'badge-urgent',
+  IMPORTANT: 'badge-important',
+};
+
 const statusClass = {
   PENDING: 'status-pending',
   APPROVED: 'status-approved',
@@ -31,9 +36,28 @@ const AppointmentTable = ({ appointments, role, onStatusChange, onReschedule }) 
           {appointments.map((appt) => {
             const name =
               role === 'PATIENT' ? appt.doctor?.user?.name : appt.patient?.user?.name;
+            const readableId =
+              role === 'DOCTOR' ? appt.patient?.readableId : null;
+
+            // ✅ Status display — RESCHEDULED overrides APPROVED only in status column
+            const isRescheduled = appt.isRescheduled && appt.status === 'APPROVED';
+            const statusLabel = isRescheduled ? 'RESCHEDULED' : appt.status;
+            const statusStyle = isRescheduled
+              ? 'status-rescheduled'
+              : statusClass[appt.status] || 'status-pending';
+
             return (
               <tr key={appt.id} className="hover:bg-gray-50">
-                <td className="py-3 pr-4 font-medium text-gray-900">{name}</td>
+
+                {/* Name + readable ID */}
+                <td className="py-3 pr-4">
+                  <p className="font-medium text-gray-900">{name}</p>
+                  {readableId && (
+                    <p className="text-xs font-mono text-gray-400">{readableId}</p>
+                  )}
+                </td>
+
+                {/* Slot */}
                 <td className="py-3 pr-4 text-gray-600 whitespace-nowrap">
                   {appt.slot ? (
                     <>
@@ -45,16 +69,32 @@ const AppointmentTable = ({ appointments, role, onStatusChange, onReschedule }) 
                     </>
                   ) : '—'}
                 </td>
-                <td className="py-3 pr-4 text-gray-600 max-w-[160px] truncate">{appt.reason}</td>
-                <td className="py-3 pr-4">
-                  <span className={urgencyClass[appt.urgency] || 'badge-normal'}>{appt.urgency}</span>
+
+                {/* Reason */}
+                <td className="py-3 pr-4 text-gray-600 max-w-[160px] truncate">
+                  {appt.reason}
                 </td>
+
+                {/* ✅ Urgency — ONLY shows NORMAL / IMPORTANT / URGENT */}
                 <td className="py-3 pr-4">
-                  <span className={statusClass[appt.status] || 'status-pending'}>{appt.status}</span>
+                  <span className={urgencyClass[appt.urgency] || 'badge-normal'}>
+                    {appt.urgency}
+                  </span>
                 </td>
+
+                {/* ✅ Status — shows RESCHEDULED when isRescheduled flag is true */}
+                <td className="py-3 pr-4">
+                  <span className={statusStyle}>
+                    {statusLabel}
+                  </span>
+                </td>
+
+                {/* Booked On */}
                 <td className="py-3 pr-4 text-gray-500 whitespace-nowrap text-xs">
                   {formatDateTime(appt.createdAt)}
                 </td>
+
+                {/* Doctor actions */}
                 {role === 'DOCTOR' && (
                   <td className="py-3">
                     <div className="flex gap-1.5">
@@ -80,13 +120,22 @@ const AppointmentTable = ({ appointments, role, onStatusChange, onReschedule }) 
                           </button>
                         </>
                       )}
+                      {/* ✅ Allow reschedule on already rescheduled/approved appointments too */}
                       {appt.status === 'APPROVED' && (
-                        <button
-                          onClick={() => onStatusChange(appt.id, 'COMPLETED')}
-                          className="text-xs px-2.5 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 font-medium"
-                        >
-                          Complete
-                        </button>
+                        <>
+                          <button
+                            onClick={() => onStatusChange(appt.id, 'COMPLETED')}
+                            className="text-xs px-2.5 py-1 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 font-medium"
+                          >
+                            Complete
+                          </button>
+                          <button
+                            onClick={() => onReschedule(appt)}
+                            className="px-3 py-1.5 text-xs font-medium border border-blue-400 text-blue-600 rounded-lg hover:bg-blue-50 transition"
+                          >
+                            Reschedule
+                          </button>
+                        </>
                       )}
                     </div>
                   </td>

@@ -13,3 +13,20 @@ export const STATUS_OPTIONS = [
   { value: 'REJECTED', label: 'Rejected' },
   { value: 'COMPLETED', label: 'Completed' },
 ];
+export const SPECIALITIES = [
+  'Cardiology',
+  'Dermatology',
+  'General Medicine',
+  'Neurology',
+  'Orthopaedics',
+  'Paediatrics',
+  'Psychiatry',
+  'Gynaecology',
+  'Ophthalmology',
+  'ENT',
+  'Oncology',
+  'Urology',
+  'Nephrology',
+  'Endocrinology',
+  'Pulmonology',
+];

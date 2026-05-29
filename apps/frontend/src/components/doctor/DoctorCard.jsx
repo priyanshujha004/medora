@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 
 const DoctorCard = ({ doctor }) => {
-  const { doctorId, speciality, experience, fees, timings, user } = doctor;
+  const { doctorId, speciality, experience, fees, timings, user, readableId } = doctor;
 
   return (
     <div className="card p-5 hover:shadow-md transition-shadow">
@@ -14,6 +14,9 @@ const DoctorCard = ({ doctor }) => {
         <div className="flex-1 min-w-0">
           <h3 className="font-semibold text-gray-900 truncate">{user?.name}</h3>
           <p className="text-sm text-primary-600 font-medium">{speciality}</p>
+              {readableId && (
+                <span className="text-xs font-mono text-gray-400">{readableId}</span>
+              )}
         </div>
       </div>
 

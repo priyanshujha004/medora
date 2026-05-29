@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { registerUser } from '../../services/authService';
 import useAuth from '../../hooks/useAuth';
+import { SPECIALITIES } from '../../utils/constants';
 
 const PATIENT_FIELDS = [
   { name: 'age', label: 'Age', type: 'number', placeholder: '25' },
@@ -13,7 +14,6 @@ const PATIENT_FIELDS = [
 const DOCTOR_FIELDS = [
   { name: 'age', label: 'Age', type: 'number', placeholder: '35' },
   { name: 'experience', label: 'Experience (years)', type: 'number', placeholder: '10' },
-  { name: 'speciality', label: 'Speciality', type: 'text', placeholder: 'Cardiology' },
   { name: 'clinicAddress', label: 'Clinic Address', type: 'text', placeholder: '12 Wellness Ave' },
   { name: 'fees', label: 'Consultation Fee (₹)', type: 'number', placeholder: '500' },
   { name: 'timings', label: 'Timings', type: 'text', placeholder: 'Mon-Fri 9am-5pm' },
@@ -22,6 +22,8 @@ const DOCTOR_FIELDS = [
 const Register = () => {
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'PATIENT' });
   const [profile, setProfile] = useState({});
+  const [specialityChoice, setSpecialityChoice] = useState('');
+  const [customSpeciality, setCustomSpeciality] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -34,8 +36,23 @@ const Register = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
+
+    // Resolve final speciality value
+    const finalProfile = { ...profile };
+    if (form.role === 'DOCTOR') {
+      const resolvedSpeciality = specialityChoice === 'Other'
+        ? customSpeciality.trim()
+        : specialityChoice;
+      if (!resolvedSpeciality) {
+        setError('Please select or enter a speciality.');
+        setLoading(false);
+        return;
+      }
+      finalProfile.speciality = resolvedSpeciality;
+    }
+
     try {
-      const res = await registerUser({ ...form, profile });
+      const res = await registerUser({ ...form, profile: finalProfile });
       login(res.data.token, res.data.user);
       navigate(res.data.user.role === 'DOCTOR' ? '/doctor/dashboard' : '/patient/dashboard');
     } catch (err) {
@@ -96,8 +113,47 @@ const Register = () => {
           <div className="border-t border-gray-100 pt-4">
             <p className="text-sm font-semibold text-gray-700 mb-3">Profile Information</p>
             <div className="grid grid-cols-2 gap-3">
+
+              {/* Speciality dropdown — only for doctors */}
+              {form.role === 'DOCTOR' && (
+                <div className="col-span-2">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Speciality</label>
+                  <select
+                    value={specialityChoice}
+                    onChange={(e) => setSpecialityChoice(e.target.value)}
+                    required
+                    className="input-field"
+                  >
+                    <option value="">Select speciality...</option>
+                    {SPECIALITIES.map((s) => (
+                      <option key={s} value={s}>{s}</option>
+                    ))}
+                    <option value="Other">Other (specify below)</option>
+                  </select>
+                  {/* Custom speciality input — shown only when Other is selected */}
+                  {specialityChoice === 'Other' && (
+                    <input
+                      type="text"
+                      value={customSpeciality}
+                      onChange={(e) => setCustomSpeciality(e.target.value)}
+                      placeholder="Enter your speciality..."
+                      className="input-field mt-2"
+                      required
+                    />
+                  )}
+                </div>
+              )}
+
+              {/* All other profile fields */}
               {profileFields.map((f) => (
-                <div key={f.name} className={f.name === 'address' || f.name === 'clinicAddress' || f.name === 'timings' ? 'col-span-2' : ''}>
+                <div
+                  key={f.name}
+                  className={
+                    f.name === 'address' || f.name === 'clinicAddress' || f.name === 'timings'
+                      ? 'col-span-2'
+                      : ''
+                  }
+                >
                   <label className="block text-xs font-medium text-gray-600 mb-1">{f.label}</label>
                   <input
                     name={f.name}

@@ -9,18 +9,20 @@ const Doctors = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [speciality, setSpeciality] = useState('');
+  const [sortFees, setSortFees] = useState('');
 
   useEffect(() => {
     const params = {};
     if (search) params.search = search;
     if (speciality) params.speciality = speciality;
+    if (sortFees) params.sortFees = sortFees;
 
     setLoading(true);
     fetchDoctors(params)
       .then((res) => setDoctors(res.data))
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [search, speciality]);
+  }, [search, speciality, sortFees]);
 
   return (
     <div className="space-y-5">
@@ -34,6 +36,8 @@ const Doctors = () => {
         onSearch={setSearch}
         speciality={speciality}
         onSpeciality={setSpeciality}
+        sortFees={sortFees}
+        onSortFees={setSortFees}
       />
 
       {loading ? (

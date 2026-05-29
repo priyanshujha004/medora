@@ -1,6 +1,7 @@
 import { useState } from "react";
 import useAuth from "../../hooks/useAuth";
 import { updateDoctorProfile } from "../../services/doctorService";
+import { SPECIALITIES } from "../../utils/constants";
 
 const Profile = () => {
   const { user, refreshUser } = useAuth();
@@ -9,17 +10,44 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const currentSpeciality = user?.doctorProfile?.speciality || "";
+  const isCustom = currentSpeciality && !SPECIALITIES.includes(currentSpeciality);
+
   const [form, setForm] = useState({
-    speciality:   user?.doctorProfile?.speciality   || "",
+    speciality:    currentSpeciality,
     clinicAddress: user?.doctorProfile?.clinicAddress || "",
-    experience:   user?.doctorProfile?.experience   || "",
-    fees:         user?.doctorProfile?.fees         || "",
-    age:          user?.doctorProfile?.age          || "",
-    timings:      user?.doctorProfile?.timings      || "",
+    experience:    user?.doctorProfile?.experience    || "",
+    fees:          user?.doctorProfile?.fees          || "",
+    age:           user?.doctorProfile?.age           || "",
+    timings:       user?.doctorProfile?.timings       || "",
   });
+
+  // Track dropdown selection separately from the actual value
+  const [specialityChoice, setSpecialityChoice] = useState(
+    isCustom ? "Other" : currentSpeciality
+  );
+  const [customSpeciality, setCustomSpeciality] = useState(
+    isCustom ? currentSpeciality : ""
+  );
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSpecialityChoice = (e) => {
+    const val = e.target.value;
+    setSpecialityChoice(val);
+    if (val !== "Other") {
+      setForm({ ...form, speciality: val });
+      setCustomSpeciality("");
+    } else {
+      setForm({ ...form, speciality: "" });
+    }
+  };
+
+  const handleCustomSpeciality = (e) => {
+    setCustomSpeciality(e.target.value);
+    setForm({ ...form, speciality: e.target.value });
   };
 
   const handleSave = async () => {
@@ -37,24 +65,27 @@ const Profile = () => {
   };
 
   const handleCancel = () => {
+    const current = user?.doctorProfile?.speciality || "";
+    const custom = current && !SPECIALITIES.includes(current);
+    setSpecialityChoice(custom ? "Other" : current);
+    setCustomSpeciality(custom ? current : "");
     setForm({
-      speciality:   user?.doctorProfile?.speciality   || "",
+      speciality:    current,
       clinicAddress: user?.doctorProfile?.clinicAddress || "",
-      experience:   user?.doctorProfile?.experience   || "",
-      fees:         user?.doctorProfile?.fees         || "",
-      age:          user?.doctorProfile?.age          || "",
-      timings:      user?.doctorProfile?.timings      || "",
+      experience:    user?.doctorProfile?.experience    || "",
+      fees:          user?.doctorProfile?.fees          || "",
+      age:           user?.doctorProfile?.age           || "",
+      timings:       user?.doctorProfile?.timings       || "",
     });
     setEditing(false);
   };
 
-  const fields = [
-    { label: "Speciality",          name: "speciality",   type: "text"   },
-    { label: "Clinic Address",      name: "clinicAddress", type: "text"   },
-    { label: "Experience (years)",  name: "experience",   type: "number" },
-    { label: "Consultation Fee (₹)", name: "fees",        type: "number" },
-    { label: "Age",                 name: "age",          type: "number" },
-    { label: "Timings",             name: "timings",      type: "text"   },
+  const otherFields = [
+    { label: "Clinic Address",       name: "clinicAddress", type: "text"   },
+    { label: "Experience (years)",   name: "experience",    type: "number" },
+    { label: "Consultation Fee (₹)", name: "fees",          type: "number" },
+    { label: "Age",                  name: "age",           type: "number" },
+    { label: "Timings",              name: "timings",       type: "text"   },
   ];
 
   return (
@@ -70,6 +101,11 @@ const Profile = () => {
           <div>
             <p className="text-lg font-semibold text-gray-800">{user?.name}</p>
             <p className="text-sm text-gray-500">{user?.email}</p>
+            {user?.doctorProfile?.readableId && (
+              <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-mono mt-1 inline-block">
+                {user.doctorProfile.readableId}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -82,7 +118,43 @@ const Profile = () => {
           </p>
         )}
 
-        {fields.map(({ label, name, type }) => (
+        {/* Speciality — dropdown in edit mode */}
+        <div>
+          <label className="block text-sm font-medium text-gray-600 mb-1">
+            Speciality
+          </label>
+          {editing ? (
+            <>
+              <select
+                value={specialityChoice}
+                onChange={handleSpecialityChoice}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select speciality...</option>
+                {SPECIALITIES.map((s) => (
+                  <option key={s} value={s}>{s}</option>
+                ))}
+                <option value="Other">Other (specify below)</option>
+              </select>
+              {specialityChoice === "Other" && (
+                <input
+                  type="text"
+                  value={customSpeciality}
+                  onChange={handleCustomSpeciality}
+                  placeholder="Enter your speciality..."
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm mt-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              )}
+            </>
+          ) : (
+            <p className="text-gray-800 text-sm px-1">
+              {user?.doctorProfile?.speciality || "—"}
+            </p>
+          )}
+        </div>
+
+        {/* All other fields */}
+        {otherFields.map(({ label, name, type }) => (
           <div key={name}>
             <label className="block text-sm font-medium text-gray-600 mb-1">
               {label}

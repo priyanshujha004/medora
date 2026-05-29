@@ -83,6 +83,7 @@ model Appointment {
   urgency   Urgency           @default(NORMAL)
   status    AppointmentStatus @default(PENDING)
   createdAt DateTime          @default(now())
+  isRescheduled Boolean @default(false)
 
   patient PatientProfile  @relation(fields: [patientId], references: [patientId], onDelete: Cascade)
   doctor  DoctorProfile   @relation(fields: [doctorId], references: [doctorId], onDelete: Cascade)

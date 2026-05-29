@@ -20,4 +20,5 @@ export const ENDPOINTS = {
     DOCTOR: '/appointments/doctor',
     UPDATE_STATUS: (id) => `/appointments/${id}/status`,
   },
+  SPECIALITIES: '/doctors/specialities',
 };

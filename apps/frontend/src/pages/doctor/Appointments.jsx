@@ -48,7 +48,7 @@ const DoctorAppointments = () => {
 
       <div className="flex gap-3 flex-col sm:flex-row">
         <div className="flex-1">
-          <SearchBar value={search} onChange={setSearch} placeholder="Search by patient name..." />
+            <SearchBar value={search} onChange={setSearch} placeholder="Search by patient name..." />
         </div>
         <select
           value={urgency}
