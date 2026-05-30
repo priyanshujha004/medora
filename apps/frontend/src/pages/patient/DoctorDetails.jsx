@@ -40,7 +40,14 @@ const DoctorDetails = () => {
       await bookAppointment({ doctorId: id, slotId: selectedSlot.id, reason, urgency });
       navigate('/patient/appointments');
     } catch (err) {
-      setError(err.response?.data?.message || 'Booking failed');
+      const message = err.response?.data?.message || 'Booking failed';
+      setError(message);
+      // ✅ If slot was just taken, refresh slots list so it disappears
+      if (err.response?.status === 409) {
+        setSelectedSlot(null);
+        const slotsRes = await fetchDoctorSlots(id, { availableOnly: 'true' });
+        setSlots(slotsRes.data);
+      }
     } finally {
       setBooking(false);
     }
