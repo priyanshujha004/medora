@@ -1,3 +1,4 @@
+import Home from '../pages/public/Home';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import MainLayout from '../layouts/MainLayout';
 import DashboardLayout from '../layouts/DashboardLayout';
@@ -56,21 +57,13 @@ const AppRoutes = () => (
       <Route path="/doctor/profile" element={<DoctorProfile />} />
     </Route>
 
-    {/* Fallback */}
-      <Route
-        path="/"
-        element={
-          <Navigate
-            to={
-              localStorage.getItem('token')
-                ? '/patient/dashboard'
-                : '/login'
-            }
-            replace
-          />
-        }
-      />
-      <Route path="*" element={<Navigate to="/login" replace />} />
+    {/* Public landing page */}
+      <Route element={<MainLayout />}>
+        <Route path="/" element={<Home />} />
+      </Route>
+
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to="/" replace />} />
   </Routes>
 );
 
