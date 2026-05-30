@@ -42,11 +42,13 @@ const DoctorDetails = () => {
     } catch (err) {
       const message = err.response?.data?.message || 'Booking failed';
       setError(message);
-      // ✅ If slot was just taken, refresh slots list so it disappears
       if (err.response?.status === 409) {
-        setSelectedSlot(null);
+        // Refresh slots — the taken slot will disappear
         const slotsRes = await fetchDoctorSlots(id, { availableOnly: 'true' });
         setSlots(slotsRes.data);
+        // Deselect only if the selected slot is no longer available
+        const stillAvailable = slotsRes.data.find(s => s.id === selectedSlot?.id);
+        if (!stillAvailable) setSelectedSlot(null);
       }
     } finally {
       setBooking(false);
@@ -94,15 +96,16 @@ const DoctorDetails = () => {
         )}
       </div>
 
-      {selectedSlot && (
-        <div className="card p-5 space-y-4">
-          <h2 className="font-semibold text-gray-800">Book Appointment</h2>
+      {/* ✅ Error shown outside booking block — visible even after slot deselected */}
+        {error && (
+          <div className="text-sm text-red-600 bg-red-50 px-4 py-3 rounded-lg border border-red-200">
+            {error}
+          </div>
+        )}
 
-          {error && (
-            <div className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg border border-red-200">
-              {error}
-            </div>
-          )}
+        {selectedSlot && (
+          <div className="card p-5 space-y-4">
+            <h2 className="font-semibold text-gray-800">Book Appointment</h2>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Reason for visit</label>

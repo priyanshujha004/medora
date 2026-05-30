@@ -8,50 +8,45 @@ const bookAppointment = async (patientId, { doctorId, slotId, reason, urgency })
     throw { status: 400, message: 'doctorId, slotId, and reason are required' };
   }
 
-  const slot = await prisma.availabilitySlot.findUnique({ where: { id: slotId } });
-  if (!slot) throw { status: 404, message: 'Slot not found' };
-  if (slot.isBooked) throw { status: 409, message: 'Slot is already booked' };
+  try {
+    const appointment = await prisma.$transaction(async (tx) => {
+      const slot = await tx.availabilitySlot.findUnique({ where: { id: slotId } });
 
-  // Atomic booking — re-check inside transaction to prevent race condition
-const appointment = await prisma.$transaction(async (tx) => {
-  // Re-fetch slot inside transaction with a write lock
-  const slot = await tx.availabilitySlot.findUnique({
-    where: { id: slotId },
-  });
+      if (!slot) throw { status: 404, message: 'Slot not found' };
+      if (slot.isBooked) {
+        throw { status: 409, message: 'This slot was just booked by someone else. Please choose another slot.' };
+      }
 
-  if (!slot) throw { status: 404, message: 'Slot not found' };
+      await tx.availabilitySlot.update({
+        where: { id: slotId },
+        data: { isBooked: true },
+      });
 
-  // ✅ This check now happens atomically — no race condition
-  if (slot.isBooked) {
-    throw { status: 409, message: 'This slot was just booked by someone else. Please choose another slot.' };
+      return tx.appointment.create({
+        data: {
+          patientId,
+          doctorId,
+          slotId,
+          reason,
+          urgency: urgency || 'NORMAL',
+          status: 'PENDING',
+        },
+        include: {
+          slot: true,
+          doctor: { include: { user: { select: { name: true } } } },
+        },
+      });
+    });
+
+    return appointment;
+
+  } catch (err) {
+    // ✅ Catch Prisma unique constraint error on slotId — means race condition occurred
+    if (err.code === 'P2002' && err.meta?.target?.includes('slotId')) {
+      throw { status: 409, message: 'This slot was just booked by someone else. Please choose another slot.' };
+    }
+    throw err; // re-throw anything else
   }
-
-  // Mark slot as booked first
-  await tx.availabilitySlot.update({
-    where: { id: slotId },
-    data: { isBooked: true },
-  });
-
-  // Create appointment
-  const newAppointment = await tx.appointment.create({
-    data: {
-      patientId,
-      doctorId,
-      slotId,
-      reason,
-      urgency: urgency || 'NORMAL',
-      status: 'PENDING',
-    },
-    include: {
-      slot: true,
-      doctor: { include: { user: { select: { name: true } } } },
-    },
-  });
-
-  return newAppointment;
-});
-
-return appointment;
 };
 
 const getPatientAppointments = async (patientId) => {
@@ -70,24 +65,9 @@ const getDoctorAppointments = async (doctorId, { search, urgency, status } = {})
   if (urgency) where.urgency = urgency;
   if (status) where.status = status;
 
-  // if (search) {
-  //   const readableIdMatch = search.match(/^PAT-([0-9A-Fa-f]{4})$/i);
-  //   if (readableIdMatch) {
-  //     // lowercase for PostgreSQL case-sensitive UUID prefix match
-  //     where.patient = {
-  //       patientId: { startsWith: readableIdMatch[1].toLowerCase() },
-  //     };
-  //   } else {
-  //     where.OR = [
-  //       { patient: { user: { name: { contains: search, mode: 'insensitive' } } } },
-  //     ];
-  //   }
-  // }
-
   if (search) {
     where.OR = [
-      { user: { name: { contains: search, mode: 'insensitive' } } },
-      { speciality: { contains: search, mode: 'insensitive' } },
+      { patient: { user: { name: { contains: search, mode: 'insensitive' } } } },
     ];
   }
 
@@ -136,7 +116,7 @@ const updateAppointmentStatus = async (appointmentId, doctorId, { status, newSlo
     ]);
 
     updateData.slotId = newSlotId;
-    updateData.isRescheduled = true; // ✅ set the flag
+    updateData.isRescheduled = true;
   }
 
   return prisma.appointment.update({
