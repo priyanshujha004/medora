@@ -3,20 +3,23 @@ import { Link, useNavigate } from 'react-router-dom';
 import { registerUser } from '../../services/authService';
 import useAuth from '../../hooks/useAuth';
 import { SPECIALITIES } from '../../utils/constants';
+import { isValidEmail, getPasswordError, isValidPhone } from '../../utils/validators';
 
 const PATIENT_FIELDS = [
-  { name: 'age', label: 'Age', type: 'number', placeholder: '25' },
-  { name: 'contactInfo', label: 'Phone', type: 'text', placeholder: '+91 98765 43210' },
-  { name: 'bloodGroup', label: 'Blood Group', type: 'text', placeholder: 'B+' },
-  { name: 'address', label: 'Address', type: 'text', placeholder: '45 Green Park, Delhi' },
+  { name: 'age', label: 'Age', type: 'number', placeholder: '21' },
+  { name: 'contactInfo', label: 'Phone', type: 'text', placeholder: '+91 XXXXX XXXXX' },
+  { name: 'bloodGroup', label: 'Blood Group', type: 'text', placeholder: 'AB+' },
+  { name: 'address', label: 'Address', type: 'text', placeholder: 'New Delhi' },
 ];
 
 const DOCTOR_FIELDS = [
   { name: 'age', label: 'Age', type: 'number', placeholder: '35' },
   { name: 'experience', label: 'Experience (years)', type: 'number', placeholder: '10' },
-  { name: 'clinicAddress', label: 'Clinic Address', type: 'text', placeholder: '12 Wellness Ave' },
+  { name: 'phone', label: 'Doctor\'s Contact Number', type: 'tel', placeholder: '+91 XXXXX XXXXX' },
+  { name: 'receptionPhone', label: 'Reception Contact', type: 'tel', placeholder: '+91 XXXXX XXXXX' },
+  { name: 'clinicAddress', label: 'Clinic Address', type: 'text', placeholder: 'New Delhi' },
   { name: 'fees', label: 'Consultation Fee (₹)', type: 'number', placeholder: '500' },
-  { name: 'timings', label: 'Timings', type: 'text', placeholder: 'Mon-Fri 9am-5pm' },
+  { name: 'timings', label: 'Timings', type: 'text', placeholder: 'Mon-Fri 6-9 PM' },
 ];
 
 const Register = () => {
@@ -28,15 +31,61 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [fieldErrors, setFieldErrors] = useState({});
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+    if (fieldErrors[e.target.name]) {
+      setFieldErrors({ ...fieldErrors, [e.target.name]: '' });
+    }
+  };
   const handleProfile = (e) => setProfile({ ...profile, [e.target.name]: e.target.value });
+
+  const validate = () => {
+    const newErrors = {};
+
+    if (!isValidEmail(form.email)) {
+      newErrors.email = 'Enter a valid Email ID';
+    }
+    const pwdError = getPasswordError(form.password);
+    if (pwdError) {
+      newErrors.password = pwdError;
+    }
+    if (form.role === 'PATIENT') {
+      if (!profile.contactInfo) {
+        newErrors.contactInfo = 'Phone Number is Required';
+      }
+      else if (!isValidPhone(profile.contactInfo)) {
+        newErrors.contactInfo = 'Enter a Valid Phone Number';
+      }
+    }
+    if (form.role === 'DOCTOR') {
+      if (!profile.phone) {
+        newErrors.phone = 'Phone Number is Required';
+      }
+      else if (!isValidPhone(profile.phone)) {
+        newErrors.phone = 'Enter a Valid Phone Number';
+      }
+      if (
+        profile.receptionPhone &&
+        !isValidPhone(profile.receptionPhone)
+      ) {
+        newErrors.receptionPhone =
+          'Enter a Valid Phone Number';
+      }
+    }
+    setFieldErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    if (!validate()) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-
     // Resolve final speciality value
     const finalProfile = { ...profile };
     if (form.role === 'DOCTOR') {
@@ -44,7 +93,7 @@ const Register = () => {
         ? customSpeciality.trim()
         : specialityChoice;
       if (!resolvedSpeciality) {
-        setError('Please select or enter a speciality.');
+        setError('Please Select or Enter a Speciality.');
         setLoading(false);
         return;
       }
@@ -56,7 +105,7 @@ const Register = () => {
       login(res.data.token, res.data.user);
       navigate(res.data.user.role === 'DOCTOR' ? '/doctor/dashboard' : '/patient/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+      setError(err.response?.data?.message || 'Registration Failed');
     } finally {
       setLoading(false);
     }
@@ -81,15 +130,31 @@ const Register = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-            <input name="name" type="text" value={form.name} onChange={handleChange} required className="input-field" placeholder="John Doe" />
+            <input name="name" type="text" value={form.name} onChange={handleChange} required className="input-field" placeholder="Amit Singh" />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input name="email" type="email" value={form.email} onChange={handleChange} required className="input-field" placeholder="you@example.com" />
+            <input
+            name="email"
+            type="email"
+            value={form.email}
+            onChange={handleChange}
+            required
+            className={`input-field ${fieldErrors.email ? 'border-red-400 focus:ring-red-400' : ''}`}
+            placeholder="example@gmail.com" />
+            {fieldErrors.email && <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input name="password" type="password" value={form.password} onChange={handleChange} required className="input-field" placeholder="At least 6 characters" />
+            <input
+            name="password"
+            type="password"
+            value={form.password}
+            onChange={handleChange}
+            required
+            className={`input-field ${fieldErrors.password ? 'border-red-400 focus:ring-red-400' : ''}`}
+            placeholder="Minimum 8 Characters"/>
+          {fieldErrors.password && <p className="text-red-500 text-xs mt-1">{fieldErrors.password}</p>}
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Register as</label>
@@ -136,7 +201,7 @@ const Register = () => {
                       type="text"
                       value={customSpeciality}
                       onChange={(e) => setCustomSpeciality(e.target.value)}
-                      placeholder="Enter your speciality..."
+                      placeholder="Enter your Speciality..."
                       className="input-field mt-2"
                       required
                     />
@@ -146,25 +211,33 @@ const Register = () => {
 
               {/* All other profile fields */}
               {profileFields.map((f) => (
-                <div
-                  key={f.name}
-                  className={
-                    f.name === 'address' || f.name === 'clinicAddress' || f.name === 'timings'
-                      ? 'col-span-2'
-                      : ''
+              <div
+                key={f.name}
+                className={
+                  f.name === 'address' || f.name === 'clinicAddress' ||
+                  f.name === 'timings' || f.name === 'phone' || f.name === 'receptionPhone'
+                    ? 'col-span-2'
+                    : ''
+              }>
+              <label className="block text-xs font-medium text-gray-600 mb-1">{f.label}</label>
+              <input
+                name={f.name}
+                type={f.type}
+                value={profile[f.name] || ''}
+                onChange={(e) => {
+                  handleProfile(e);
+                  if (fieldErrors[e.target.name]) {
+                    setFieldErrors({ ...fieldErrors, [e.target.name]: '' });
                   }
-                >
-                  <label className="block text-xs font-medium text-gray-600 mb-1">{f.label}</label>
-                  <input
-                    name={f.name}
-                    type={f.type}
-                    value={profile[f.name] || ''}
-                    onChange={handleProfile}
-                    required
-                    className="input-field"
-                    placeholder={f.placeholder}
-                  />
-                </div>
+                }}
+                required={f.name !== 'phone' && f.name !== 'receptionPhone'}
+                className={`input-field ${fieldErrors[f.name] ? 'border-red-400 focus:ring-red-400' : ''}`}
+                placeholder={f.placeholder}
+              />
+              {fieldErrors[f.name] && (
+                <p className="text-red-500 text-xs mt-1">{fieldErrors[f.name]}</p>
+              )}
+              </div>
               ))}
             </div>
           </div>

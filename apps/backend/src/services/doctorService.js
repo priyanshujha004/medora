@@ -55,17 +55,19 @@ const getDoctorById = async (doctorId) => {
 };
 
 const updateDoctorProfile = async (doctorId, data) => {
-  const { age, experience, speciality, clinicAddress, fees, timings } = data;
+  const { age, experience, speciality, clinicAddress, fees, timings, phone, receptionPhone } = data;
   const updated = await prisma.doctorProfile.update({
-    where: { doctorId },
-    data: {
-      ...(age && { age: parseInt(age) }),
-      ...(experience && { experience: parseInt(experience) }),
-      ...(speciality && { speciality }),
-      ...(clinicAddress && { clinicAddress }),
-      ...(fees && { fees: parseFloat(fees) }),
-      ...(timings && { timings }),
-    },
+  where: { doctorId },
+  data: {
+    ...(age && { age: parseInt(age) }),
+    ...(experience && { experience: parseInt(experience) }),
+    ...(speciality && { speciality }),
+    ...(clinicAddress && { clinicAddress }),
+    ...(fees && { fees: parseFloat(fees) }),
+    ...(timings && { timings }),
+    ...(phone !== undefined && { phone }),
+    ...(receptionPhone !== undefined && { receptionPhone }),
+  },
     include: { user: { select: { id: true, name: true, email: true } } },
   });
   return { ...updated, readableId: makeReadableId(updated.doctorId) };

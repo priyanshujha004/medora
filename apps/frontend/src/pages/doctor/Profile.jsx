@@ -20,6 +20,8 @@ const Profile = () => {
     fees:          user?.doctorProfile?.fees          || "",
     age:           user?.doctorProfile?.age           || "",
     timings:       user?.doctorProfile?.timings       || "",
+    phone:         user?.doctorProfile?.phone         || "",     
+    receptionPhone: user?.doctorProfile?.receptionPhone || "", 
   });
 
   // Track dropdown selection separately from the actual value
@@ -51,6 +53,14 @@ const Profile = () => {
   };
 
   const handleSave = async () => {
+    if (form.phone && !isValidPhone(form.phone)) {
+      setError("Enter a Valid Contact Number");
+      return;
+    }
+    if (form.receptionPhone && !isValidPhone(form.receptionPhone)) {
+      setError('Enter a Valid Contact Number');
+      return;
+    }
     setLoading(true);
     setError("");
     try {
@@ -58,7 +68,7 @@ const Profile = () => {
       await refreshUser();
       setEditing(false);
     } catch (err) {
-      setError(err?.response?.data?.message || "Failed to update profile.");
+      setError(err?.response?.data?.message || "Failed to Update Profile.");
     } finally {
       setLoading(false);
     }
@@ -76,16 +86,20 @@ const Profile = () => {
       fees:          user?.doctorProfile?.fees          || "",
       age:           user?.doctorProfile?.age           || "",
       timings:       user?.doctorProfile?.timings       || "",
+      phone:         user?.doctorProfile?.phone         || "",   
+      receptionPhone: user?.doctorProfile?.receptionPhone || "", 
     });
     setEditing(false);
   };
 
   const otherFields = [
-    { label: "Clinic Address",       name: "clinicAddress", type: "text"   },
-    { label: "Experience (years)",   name: "experience",    type: "number" },
-    { label: "Consultation Fee (₹)", name: "fees",          type: "number" },
-    { label: "Age",                  name: "age",           type: "number" },
-    { label: "Timings",              name: "timings",       type: "text"   },
+    { label: "Clinic Address",       name: "clinicAddress",  type: "text"   },
+    { label: "Experience (years)",   name: "experience",     type: "number" },
+    { label: "Consultation Fee (₹)", name: "fees",           type: "number" },
+    { label: "Age",                  name: "age",            type: "number" },
+    { label: "Timings",              name: "timings",        type: "text"   },
+    { label: "Doctor's Phone",       name: "phone",          type: "tel"    },
+    { label: "Reception Phone",      name: "receptionPhone", type: "tel"    },
   ];
 
   return (

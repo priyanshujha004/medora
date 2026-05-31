@@ -73,6 +73,12 @@ const DoctorDetails = () => {
               <span>₹{doctor.fees} fee</span>
               <span>{doctor.timings}</span>
               <span>{doctor.clinicAddress}</span>
+              {doctor.phone && (
+                <span>📞 {doctor.phone}</span>
+              )}
+              {doctor.receptionPhone && (
+                <span>📞 Reception: {doctor.receptionPhone}</span>
+              )}
             </div>
           </div>
         </div>

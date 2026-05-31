@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum Role {
@@ -56,6 +57,8 @@ model DoctorProfile {
   clinicAddress String
   fees          Float
   timings       String
+  phone         String?
+  receptionPhone String?
 
   user              User               @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   availabilitySlots AvailabilitySlot[]
