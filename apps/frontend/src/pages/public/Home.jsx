@@ -62,9 +62,6 @@ const Home = () => {
     { icon: 'shield',   title: 'Today\'s Schedule',         description: 'Dashboard highlights today\'s approved appointments so you always know who\'s coming next.', accent: 'bg-cyan-50 text-cyan-600'       },
   ];
 
-  const patientSteps = ['Register', 'Find Doctor', 'Book Slot', 'Await Approval', 'Visit Complete'];
-  const doctorSteps  = ['Create Slots', 'Review Requests', 'Approve / Reject', 'Manage Schedule'];
-
   return (
     <div className="bg-gray-50">
 

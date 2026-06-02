@@ -1,9 +1,10 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
-  
+  const location = useLocation();
+
   return (
     <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -21,40 +22,25 @@ const Navbar = () => {
         {/* Landing Page Navigation */}
         {!user && (
           <nav className="hidden lg:flex items-center gap-8">
-            <a
-              href="#about"
-              className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-all duration-300 hover:-translate-y-1"
-            >
-              About
-            </a>
-
-            <a
-              href="#patients"
-              className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-all duration-300 hover:-translate-y-1"
-            >
-              Patients
-            </a>
-
-            <a
-              href="#doctors"
-              className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-all duration-300 hover:-translate-y-1"
-            >
-              Doctors
-            </a>
-
-            <a
-              href="#preview"
-              className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-all duration-300 hover:-translate-y-1"
-            >
-              Gallery
-            </a>
-
-            <a
-              href="#testimonials"
-              className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-all duration-300 hover:-translate-y-1"
-            >
-              Testimonials
-            </a>
+            {location.pathname === '/' ? (
+              <>
+                <a href="#about" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-all duration-300 hover:-translate-y-1">About</a>
+                <a href="#patients" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-all duration-300 hover:-translate-y-1">Patients</a>
+                <a href="#doctors" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-all duration-300 hover:-translate-y-1">Doctors</a>
+                <a href="#preview" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-all duration-300 hover:-translate-y-1">Gallery</a>
+                <a href="#testimonials" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-all duration-300 hover:-translate-y-1">Testimonials</a>
+              </>
+            ) : (
+              (location.pathname === '/login' || location.pathname === '/register') && (
+                <>
+                  <a href="/#about" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-all duration-300 hover:-translate-y-1">About</a>
+                  <a href="/#patients" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-all duration-300 hover:-translate-y-1">Patients</a>
+                  <a href="/#doctors" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-all duration-300 hover:-translate-y-1">Doctors</a>
+                  <a href="/#preview" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-all duration-300 hover:-translate-y-1">Gallery</a>
+                  <a href="/#testimonials" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-all duration-300 hover:-translate-y-1">Testimonials</a>
+                </>
+              )
+            )}
           </nav>
         )}
 

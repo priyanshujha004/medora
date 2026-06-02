@@ -43,7 +43,7 @@ const Doctors = () => {
       {loading ? (
         <Loader />
       ) : doctors.length === 0 ? (
-        <p className="text-gray-500 text-sm text-center py-12">No doctors found.</p>
+        <p className="text-gray-500 text-sm text-center py-12">No Doctors Found.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {doctors.map((doc) => (

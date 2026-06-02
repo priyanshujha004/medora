@@ -2,6 +2,7 @@ import { useState } from "react";
 import useAuth from "../../hooks/useAuth";
 import { updateDoctorProfile } from "../../services/doctorService";
 import { SPECIALITIES } from "../../utils/constants";
+import { isValidPhone } from '../../utils/validators';
 
 const Profile = () => {
   const { user, refreshUser } = useAuth();
