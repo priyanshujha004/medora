@@ -2,7 +2,7 @@
 
 A full-stack MVP for managing healthcare appointments between patients and doctors. Built with a modern monorepo architecture, production-grade REST API, and a clean React frontend.
 
-**Live:** [https://healthcare-medora.vercel.app](https://healthcare-medora.vercel.app)
+**Live:** [https://healthcare-medora.vercel.app/](https://healthcare-medora.vercel.app/)
 
 ## Overview
 
@@ -126,13 +126,8 @@ npx prisma generate
 ### 6. Start the development servers
 
 ```bash
-# Terminal 1 — Backend
 cd apps/backend
 npm run dev
-# → http://localhost:3001
-
-# Terminal 2 — Frontend
+# --------------------------
 cd apps/frontend
 npm run dev
-# → http://localhost:5173
-```
