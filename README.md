@@ -88,46 +88,74 @@ Appointment              (many:1 with PatientProfile and DoctorProfile, 1:1 with
 
 ## Local Setup
 
-### Prerequisites
+### Running with Docker (Recommended)
+
+The easiest way to run the full stack locally is using Docker Compose.
+
+**Prerequisites:**
+- [Docker Desktop](https://www.docker.com/products/docker-desktop) installed and running.
+
+**Steps:**
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/priyanshujha/medora.git
+   cd medora
+   ```
+2. Create your `.env` files : 
+   - `apps/backend/.env`
+   - `apps/frontend/.env` (if applicable)
+3. Build and start the containers:
+   ```bash
+   docker compose up --build
+   ```
+4. Access the app:
+   - Frontend: `http://localhost:5173`
+   - Backend API: `http://localhost:3001`
+5. To gracefully stop the app, press `Ctrl + C` and then run:
+   ```bash
+   docker compose down
+   ```
+
+---
+
+### Running Manually (Without Docker)
+
+**Prerequisites:**
 - Node.js 18+
 - npm
 - PostgreSQL database (Supabase recommended)
 
-### 1. Clone the repository
-
+**1. Clone the repository**
 ```bash
 git clone https://github.com/priyanshujha/medora.git
 cd medora
 ```
 
-### 2. Install backend dependencies
-
+**2. Install dependencies**
 ```bash
 cd apps/backend
 npm install
-```
 
-### 3. Install frontend dependencies
-
-```bash
-cd apps/frontend
+cd ../frontend
 npm install
 ```
-### 4. Configure environment variables
 
-### 5. Run Prisma migrations
+**3. Configure environment variables**
+Create `.env` files in both `apps/backend` and `apps/frontend`.
 
+**4. Run Prisma migrations**
 ```bash
 cd apps/backend
 npx prisma migrate dev
 npx prisma generate
 ```
 
-### 6. Start the development servers
-
+**5. Start the development servers (in separate terminals)**
 ```bash
 cd apps/backend
 npm run dev
+
 # --------------------------
 cd apps/frontend
 npm run dev
+```
