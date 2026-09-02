@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import slot from "../../../../images/slot.png";
-import patient from "../../../../images/patient.png";
-import doctor from "../../../../images/doctor.png";
+import slot from "../../assets/images/slot.png";
+import patient from "../../assets/images/patient.png";
+import doctor from "../../assets/images/doctor.png";
 
 // ─── Icon primitives ──────────────────────────────────────────────────────────
 const Icon = ({ path, size = 20 }) => (

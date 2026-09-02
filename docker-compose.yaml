@@ -1,0 +1,20 @@
+version: '3.8'
+services:
+  frontend:
+    container_name: medora-fe
+    build:
+      context: ./apps/frontend  # Tells Docker where the Dockerfile is
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./apps/frontend/src:/app/src
+  backend:
+    container_name:  medora-be 
+    build:
+      context : ./apps/backend
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./apps/backend/src:/app/src
+    env_file:
+      - ./apps/backend/.env
